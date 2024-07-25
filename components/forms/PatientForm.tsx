@@ -9,7 +9,7 @@ import SubmitButton from '@/components/SubmitButton';
 import { useState } from 'react';
 import { UserFormValidation } from '@/lib/validation';
 import { useRouter } from 'next/navigation';
-import { createuser } from '@/lib/actions/patient.actions';
+import { createUser } from '@/lib/actions/patient.actions';
 
 const PatientForm = () => {
   const router = useRouter();
@@ -28,7 +28,7 @@ const PatientForm = () => {
     setIsLoading(true);
     try {
       const userData = { name, email, phone };
-      const user = await createuser(userData);
+      const user = await createUser(userData);
       // console.log(user);
       if (user) router.push(`/patients/${user.$id}/register`);
     } catch (error) {
