@@ -1,9 +1,15 @@
 'use server';
 
 import { ID, Query } from 'node-appwrite';
-import { APPOINTMENT_COLLECTION_ID, DATABASE_ID, databases } from '@/lib/appwrite.config';
-import { parseStringify } from '@/lib/utils';
+import {
+  APPOINTMENT_COLLECTION_ID,
+  DATABASE_ID,
+  databases,
+  messaging,
+} from '@/lib/appwrite.config';
+import { formatDateTime, parseStringify } from '@/lib/utils';
 import { Appointment } from '@/types/appwire.types';
+import { revalidatePath } from 'next/cache';
 
 export const createAppointment = async (appointment: CreateAppointmentParams) => {
   try {
@@ -70,6 +76,53 @@ export const getRecentAppontmentList = async () => {
     };
 
     return parseStringify(data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const updateAppointment = async ({
+  appointment,
+  appointmentId,
+  userId,
+  type,
+}: UpdateAppointmentParams) => {
+  try {
+    const updatedAppointment = await databases.updateDocument(
+      DATABASE_ID!,
+      APPOINTMENT_COLLECTION_ID!,
+      appointmentId,
+      appointment,
+    );
+
+    if (!updateAppointment) {
+      throw new Error('Appointment not found');
+    }
+
+    // TODO: SMS notification
+    const smsMessage = `
+      Сообщение от CarePulse.
+      ${
+        type === 'schedule'
+          ? `Ваш визит к врачу Док. ${appointment.primaryPhysician} запланирован на ${formatDateTime(appointment.schedule!).dateTime}`
+          : `Информируем Вас, что ваш визит к врачу был отменен. Причина: ${appointment.cancellationReason}`
+      }
+    `;
+
+    // await sendSMSNotification(userId, smsMessage); // Необходима настройка Messaging в Apppwrite (в примере используется Twilio)
+
+    revalidatePath('/admin');
+    return parseStringify(updatedAppointment);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const sendSMSNotification = async (userId: string, content: string) => {
+  try {
+    const message = await messaging.createSms(ID.unique(), content, [], [userId]);
+
+    return parseStringify(message);
   } catch (error) {
     console.error(error);
   }

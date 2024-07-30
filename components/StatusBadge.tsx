@@ -1,4 +1,4 @@
-import { StatusIcon } from '@/constant';
+import { StatusIcon, StatusText } from '@/constant';
 import clsx from 'clsx';
 import Image from 'next/image';
 import React from 'react';
@@ -15,12 +15,12 @@ const StatusBadge = ({ status }: { status: Status }) => {
       <Image src={StatusIcon[status]} alt={status} width={24} height={24} className="h-fit w-3" />
       <p
         className={clsx('status-badge', {
-          'text-green-600': status === 'scheduled',
-          'text-blue-600': status === 'pending',
-          'text-red-600': status === 'cancelled',
+          'text-green-500': status === 'scheduled',
+          'text-blue-500': status === 'pending',
+          'text-red-500': status === 'cancelled',
         })}
       >
-        {status}
+        {StatusText[status]}
       </p>
     </div>
   );
